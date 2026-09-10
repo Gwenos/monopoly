@@ -24,10 +24,10 @@ Installez les dépendances
   npm install
 ```
 Lancer le serveur
-
 ```bash
   vite
 ```
+Un URL apparaitra dans la console, copier coller la dans la barre du navigateur, ou Ctr-Clic dessus si vous le pouvez.
 
 
 ## Authors
