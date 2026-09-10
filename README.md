@@ -1,5 +1,4 @@
-
-# Monopolypoly
+# Monopolypoly (⚠️WIP)
 
 Le jeu du Monopoly en local, en **TypeScript**, **HTML**, **CSS** et sans IA.
 
