@@ -5,7 +5,10 @@ export enum State {
     BUY = "BUY",
     PAY = "PAY",
     JAIL = "JAIL",
-    LUCK = "LUCK",
+
+    MOVE = "MOVE",
+    MOVE_TO = "MOVE_TO",
+    GAIN = "GAIN",
 }
 
 export class Game {
@@ -27,10 +30,19 @@ export class Game {
                 break;
             case State.JAIL: this.state = State.DICE;
                 break;
-            case State.LUCK: this.state = State.DICE;
+            case State.MOVE: this.state = State.DICE;
                 break;
-            default: this.LOG.warn(`Pas d'état suivant à : ${this.state}`);
+            case State.MOVE_TO: this.state = State.DICE;
+                break;
+            case State.GAIN: this.state = State.DICE;
+                break;
+            default:
+                this.LOG.warn(`Pas d'état suivant à : ${this.state}`);
+                this.state = State.DICE;
+                break;
         }
+        let rollButton: HTMLButtonElement = document.getElementById("roll") as HTMLButtonElement;
+        rollButton.disabled = false;
         this.LOG.info(`Etat courant : ${this.state}`);
     }
 

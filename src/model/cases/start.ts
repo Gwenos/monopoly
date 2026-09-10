@@ -1,5 +1,5 @@
 import {Case} from "./case.ts";
-import {Colors} from "../util/colors.ts";
+import {Colors} from "../../util/colors.ts";
 
 export class Start extends Case {
 

@@ -1,21 +1,167 @@
-/*!*:root {*!*/
-/*!*    background-color: red;*!*/
-/*!*}*!*/
+body{
+    font-family: cursive, serif;
+}
 
-/*button {*/
-/*    background-color: #ffff00;*/
-/*    color: black;*/
-/*    border: 1px solid darkblue;*/
-/*    padding-top: 10px;*/
-/*    padding-bottom: 10px;*/
-/*    padding-left: 50px;*/
-/*    padding-right: 50px;*/
-/*    border-radius: 50px;*/
-/*    text-align: center;*/
-/*    font-weight: bold;*/
+.view{
+    display: flex;
+}
 
-/*}*/
+.players{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.player{
+    background-color: lightgreen;
+    padding: 10px;
+    border-radius: 10px;
+}
 
-/*button:hover {*/
-/*    background-color: #888805;*/
-/*}*/
+/* UTIL */
+
+.align-right{
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.align-center{
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.space-between{
+    display: flex;
+    justify-content: space-between;
+}
+
+.property-content{
+    padding: 10px;
+    gap: 20px;
+}
+
+
+/* BUTTON  */
+
+.button {
+    color: #d3ffab;
+    padding: 10px 20px;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.green-button{
+    border: 2px solid transparent;
+    background:
+            linear-gradient(to top, #1e8e3e, #2ac742) padding-box,
+            linear-gradient(to top, #2ac742, #72fc87) border-box;
+}
+
+.green-button:hover {
+    border: 2px solid transparent;
+    background:
+            linear-gradient(to top, #1e8e3e, #1e8e3e) padding-box,
+            linear-gradient(to top, #2ac742, #72fc87) border-box;
+}
+
+.red-button {
+    background:
+            linear-gradient(to top, #70103f, #ce0f59) padding-box,
+            linear-gradient(to top, #af0b5e, #f13e83) border-box;
+}
+.red-button:hover {
+    background:
+            linear-gradient(to top, #70103f, #70103f) padding-box,
+            linear-gradient(to top, #af0b5e, #f13e83) border-box;
+}
+
+/* DIALOG */
+
+.dialog{
+    border: 0;
+    padding: 0;
+    border-radius: 10px;
+    width: 500px;
+    /*height: 120px;*/
+}
+
+/*INFO*/
+
+.top-info{
+    background-color: lightseagreen;
+    padding: 0 5px 0 5px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.text-info{
+    /*margin: 0;*/
+    padding: 0 5px 0 5px;
+}
+
+.bottom-info{
+    height: 20px;
+    background-color: lightseagreen;
+}
+
+/*PROPERTY*/
+
+.top-property{
+    background-color: hotpink;
+    padding: 0 5px 0 5px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.property-card{
+    display: flex;
+    flex-direction: column;
+    background-color: lightpink;
+    padding: 5px;
+    border: 2px solid gold;
+    border-radius: 10px;}
+
+.property-price{
+    font-size: 2em;
+}
+
+.title-rent{
+    color: #70103f;
+    font-weight: bold;
+}
+
+.property-rents{
+    width: 250px;
+    background-color: #f8e0e4;
+    border: 2px solid gold;
+    border-radius: 10px;
+    padding: 5px;
+}
+
+.bottom-property{
+    margin-top: 5px;
+    height: 20px;
+    background-color: hotpink;
+}
+
+
+/* ICON */
+
+.icon {
+    width: 25px;
+    height: 25px;
+    /*object-fit: contain;*/
+}

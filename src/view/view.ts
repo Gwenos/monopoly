@@ -1,10 +1,12 @@
 import {Model} from "../model/model.ts";
 import {Controller} from "../controller/controller.ts";
 import {Player} from "../model/player.ts";
-import {Case} from "../model/case.ts";
-import {Property} from "../model/property.ts";
+import {Case} from "../model/cases/case.ts";
+import {Property} from "../model/cases/property.ts";
 import {Logger} from "../util/logger.ts";
-import {Start} from "../model/start.ts";
+import {Start} from "../model/cases/start.ts";
+import {House} from "../model/cases/properties/house.ts";
+import {Colors} from "../util/colors.ts";
 
 export class View {
 
@@ -41,8 +43,12 @@ export class View {
 		if (ctx == null) return;
 
 		ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-		ctx.fillStyle = "lightblue";
+		ctx.fillStyle = Colors.BACKGROUND_COLOR;
 		ctx.fillRect(0, 0, this.boardSize, this.boardSize);
+		ctx.fillStyle = 'black';
+		ctx.font = "50px serif";
+		ctx.fillText("MONOPOLYPOLY", this.boardSize/6, this.boardSize/2);
+
 
 		if (this.model.board.cases === undefined) return;
 
@@ -51,18 +57,26 @@ export class View {
 
 			ctx.fillStyle = c.color;
 			ctx.fillRect(c.position.x*this.caseWidth, c.position.y*this.caseWidth, this.caseWidth, this.caseWidth);
-			ctx.fillStyle = "black";
-			ctx.strokeRect(c.position.x*this.caseWidth, c.position.y*this.caseWidth, this.caseWidth, this.caseWidth);
+			ctx.strokeStyle = "black";
+			// ctx.strokeRect(c.position.x*this.caseWidth, c.position.y*this.caseWidth, this.caseWidth, this.caseWidth);
 
-			if (c instanceof Property && c.owner!=undefined){
-				ctx.fillStyle = c.owner.color;
+			if (c instanceof House){
+				ctx.fillStyle =  c.owner!=undefined ? c.owner.color : c.secondaryColor;
 				ctx.fillRect(c.position.x*this.caseWidth, c.position.y*this.caseWidth, this.caseWidth, this.caseWidth/4);
+				ctx.strokeStyle = "10px black";
+				// ctx.strokeRect(c.position.x*this.caseWidth, c.position.y*this.caseWidth, this.caseWidth, this.caseWidth/4);
 			}
+
+
 		}
 		for (let c of this.model.board.cases) {
-			ctx.fillStyle = "black";
-			ctx.font = "12px serif";
-			ctx.fillText(c.name, c.position.x*this.caseWidth, c.position.y*this.caseWidth+(this.caseWidth/2), this.caseWidth);
+			ctx.fillStyle = "white";
+			ctx.font = "10px serif";
+
+			const lines = c.name.split(" ");
+			lines.forEach((line, i) => {
+				ctx.fillText(line, c.position.x*this.caseWidth, (c.position.y*this.caseWidth+(this.caseWidth/2)) + i * 10);
+			});
 		}
 
 	}
@@ -81,8 +95,13 @@ export class View {
 				this.caseWidth/2,
 				this.caseWidth/2
 			);
-			// ctx.fillStyle = 'white';
-			// ctx.strokeRect(c.position.x*this.caseWidth, c.position.y*this.caseWidth, this.caseWidth/2, this.caseWidth/2);
+			ctx.strokeStyle = 'white';
+			ctx.strokeRect(
+				c.position.x*this.caseWidth + this.caseWidth/4,
+				c.position.y*this.caseWidth + this.caseWidth/4,
+				this.caseWidth/2,
+				this.caseWidth/2
+			);
 		}
 	}
 
@@ -95,7 +114,7 @@ export class View {
 			let dice = this.model.dices[i];
 			if (dice.value == undefined) continue;
 
-			ctx.fillStyle = "black";
+			ctx.strokeStyle = "black";
 			ctx.strokeRect(this.boardSize + 50 + (i*60), 50, this.caseWidth, this.caseWidth);
 			ctx.font = "30px serif";
 			ctx.fillText(dice.value.toString(), this.boardSize + 50 + (i*60), 75);
@@ -104,15 +123,38 @@ export class View {
 	}
 
 	displayMoney(): void {
-		if (this.canvas == null ) return;
-		const ctx = this.canvas.getContext("2d");
-		if (ctx == null) return;
+		let divPlayers: HTMLDivElement = <HTMLDivElement> document.getElementById("players");
+		divPlayers.innerHTML = "";
+
 
 		for (let i = 0; i < this.model.players.length; i++) {
 			let player: Player = this.model.players[i];
-			ctx.fillStyle = "black";
-			ctx.font = "30px serif";
-			ctx.fillText(`${player.name} : ${player.money}`, this.boardSize + 50, 150 + i * 50);
+
+			let divPlayer: HTMLDivElement = <HTMLDivElement> document.createElement("div");
+			divPlayer.className = "player";
+
+			let divName = document.createElement("div");
+			divName.innerText = player.name;
+			divPlayer.appendChild(divName)
+
+			let divMoney = document.createElement("div");
+			divMoney.innerText = `Compte: ${player.money} €`;
+			divPlayer.appendChild(divMoney)
+
+			let divPatrimony = document.createElement("div");
+			let properties: Property[] = this.model.board.cases.filter(
+				c => c instanceof Property
+			).filter(
+				c => c.owner?.equals(player)
+			);
+			let patrimoine = properties.reduce(
+				(acc, c) => acc + c.price, 0
+			);
+			divPatrimony.innerText = `Patrimoine: ${patrimoine} €`;
+			divPlayer.appendChild(divPatrimony)
+
+			divPlayers.appendChild(divPlayer)
+
 		}
 	}
 
@@ -133,8 +175,8 @@ export class View {
 			}
 			this.display();
 			if (currentPlayer.caseIndex === futurIndex) {
-				this.controller.handlePosition();
 				this.LOG.info(`${currentPlayer.name} sur ${this.model.board.cases[currentPlayer.caseIndex].name}`);
+				this.controller.handlePosition();
 				clearInterval(interval);
 			}
 		}, 200);

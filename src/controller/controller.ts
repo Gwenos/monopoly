@@ -2,22 +2,24 @@ import {Logger} from "../util/logger";
 import {Model} from "../model/model";
 import {View} from "../view/view.ts";
 import {Game, State} from "./game.ts";
-import {Case} from "../model/case.ts";
+import {Case} from "../model/cases/case.ts";
 import {Player} from "../model/player.ts";
-import {Property} from "../model/property.ts";
-import {Jail} from "../model/jail.ts";
-import {Community} from "../model/community.ts";
-import { dialogsCommunity } from "../dialogs/dialogsCommunity";
-import {Luck} from "../model/luck.ts";
-import {Station} from "../model/station.ts";
-import {Compagny} from "../model/compagny.ts";
-import {dialogsLuck} from "../dialogs/dialogsLuck.ts";
-import {Taxe} from "../model/taxe.ts";
-import {House} from "../model/house.ts";
+import {Property} from "../model/cases/property.ts";
+import {Jail} from "../model/cases/jail.ts";
+import {Community} from "../model/cases/community.ts";
+import { communities } from "../dialogs/communities.ts";
+import {Luck} from "../model/cases/luck.ts";
+import {Station} from "../model/cases/properties/station.ts";
+import {Compagny} from "../model/cases/properties/compagny.ts";
+import {lucks} from "../dialogs/lucks.ts";
+import {Taxe} from "../model/cases/taxe.ts";
+import {House} from "../model/cases/properties/house.ts";
+import {DialogManager} from "./dialog-manager.ts";
 
 export class Controller {
 
 	LOG: Logger = new Logger(Controller.name);
+	dialogManager: DialogManager;
 
 	model: Model;
 	view: View;
@@ -29,11 +31,18 @@ export class Controller {
 
 	jailTurn: Record<string, number>;
 
+	dialogProperty: HTMLDialogElement;
+
+	rollButton: HTMLButtonElement | null;
+	buyButton: HTMLButtonElement | null;
+	cancelButton: HTMLButtonElement | null;
+
 	constructor(names: string[], nbDice: number) {
 
 		this.model = new Model(names, nbDice);
 		this.view = new View(this, this.model);
 		this.game = new Game();
+		this.dialogManager = new DialogManager(this);
 
 		this.currentPlayerIndex = 0;
 
@@ -41,18 +50,25 @@ export class Controller {
 			this.model.players.map(player => [player.name, 3])
 		);
 
-		// this.start();
 		this.view.display();
 
-		document.getElementById("roll")?.addEventListener("click", () => {
+		// dialog
+		this.dialogProperty = <HTMLDialogElement> document.getElementById("dialog-property");
+
+		// Button
+		this.rollButton = <HTMLButtonElement> document.getElementById("roll");
+		this.rollButton?.addEventListener("click", () => {
 			this.throwDice();
+			if (this.rollButton) this.rollButton.disabled = true;
 		});
 
-		document.getElementById("buy")?.addEventListener("click", () => {
+		this.buyButton = <HTMLButtonElement> document.getElementById("buy");
+		this.buyButton?.addEventListener("click", () => {
 			this.buyProperty();
 		});
 
-		document.getElementById("cancel")?.addEventListener("click", () => {
+		this.cancelButton = <HTMLButtonElement> document.getElementById("cancel");
+		this.cancelButton?.addEventListener("click", () => {
 			this.nextPlayer();
 		});
 	}
@@ -68,6 +84,7 @@ export class Controller {
 		}
 
 		let currentPlayer: Player = this.model.players[this.currentPlayerIndex]
+
 		let sum: number = this.model.getDiceSum();
 		let futurIndex = (currentPlayer.caseIndex + sum) % 40;
 		this.view.movePlayer(currentPlayer, futurIndex);
@@ -96,9 +113,8 @@ export class Controller {
 
 		this.LOG.info(`${currentPlayer.name} achète ${currentCase.name}`)
 
-		let modalProperty: HTMLDialogElement | null = document.getElementById("modal-property") as HTMLDialogElement;
-		if(modalProperty) {
-			modalProperty.close();
+		if(this.dialogProperty) {
+			this.dialogProperty.close();
 		}
 		this.nextPlayer()
 		this.view.display();
@@ -106,25 +122,27 @@ export class Controller {
 
 
 	nextPlayer(): void {
-		let modalProperty: HTMLDialogElement | null = document.getElementById("modal-property") as HTMLDialogElement;
-		if(modalProperty) {
-			modalProperty.close();
+
+		if(this.dialogProperty) {
+			this.dialogProperty.close();
 		}
 		clearTimeout(this.timer);
+
 		this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.model.players.length;
 		let currenPlayer = this.model.players[this.currentPlayerIndex];
 		let currentCase = this.model.board.cases[currenPlayer.caseIndex];
+
 
 		if (currentCase instanceof Jail) {
 			this.game.state = State.JAIL;
 
 			if (this.jailTurn[currenPlayer.name] === 0) {
 				this.LOG.info(`joueur suivant : ${currenPlayer.name}`);
-				this.openDialog(`${currenPlayer.name} sort de prison`, 1000, false);
+				this.dialogManager.info(`${currenPlayer.name} sort de prison`, 1000, false);
 				this.game.nextState();
 				this.jailTurn[currenPlayer.name] = 3;
 			} else {
-				this.openDialog(`${currenPlayer.name} en prison pour ${this.jailTurn[currenPlayer.name]} tour`, 1000);
+				this.dialogManager.info(`${currenPlayer.name} en prison pour ${this.jailTurn[currenPlayer.name]} tour`, 1000);
 				this.jailTurn[currenPlayer.name] -= 1;
 			}
 
@@ -146,73 +164,87 @@ export class Controller {
 		let player: Player = this.model.players[this.currentPlayerIndex];
 		let c: Case = this.model.board.cases[player.caseIndex];
 
-		if (c instanceof Property) {
+		if (c instanceof Property) { // Si la case est une propriété
 
-			if (c.owner === undefined){
-				this.game.state = State.BUY
-				this.game.logCurrentState()
-				let modalProperty: HTMLDialogElement | null = document.getElementById("modal-property") as HTMLDialogElement;
-				let modalText: HTMLParagraphElement = document.getElementById("modal-text") as HTMLParagraphElement;
-				if(modalProperty) {
-					modalText.textContent = `Voulez vous acheter ${c.name} pour ${c.price} ?`;
-					modalProperty.showModal();
+			if (c.owner === undefined){ // Si la propriété n'a pas de propriétaire
+				this.game.state = State.BUY;
+				this.game.logCurrentState();
+
+				if(this.dialogProperty) {
+					this.dialogManager.openDialogProperty(c);
 				}
 				this.timer = setTimeout(() => {
 					this.nextPlayer();
-				}, 5000);
-			} else if (!c.owner.equals(player)){
+				}, 10000);
+			} else if (!c.owner.equals(player)){ // Si on est pas le propriétaire de la propriété
 				this.game.state = State.PAY
 				this.game.logCurrentState()
 
 				let finalPrice: number;
 				if (c instanceof House) {
-					finalPrice = c.price * c.level;
+					finalPrice = c.price //* c.level;
 				}
 				if (c instanceof Station) {
 					let nbStation = this.model.board.cases.filter(
 						c2 => c2 instanceof Station && c.owner?.equals(c2.owner)
 					).length;
-					finalPrice = c.price*nbStation
+					switch (nbStation) {
+						case 1:
+							finalPrice = 250;
+							break;
+						case 2:
+							finalPrice = 500;
+							break;
+						case 3:
+							finalPrice = 1000;
+							break;
+						case 4:
+							finalPrice = 2000;
+							break;
+						default:
+							finalPrice = 0;
+							break;
+					}
 				}else if (c instanceof Compagny) {
 					finalPrice = c.price
 				}else {
 					finalPrice = c.price;
 				}
 				this.LOG.info(`${player.name} paye ${finalPrice} a ${c.owner.name}`);
-				this.openDialog(`${player.name} paye ${finalPrice} a ${c.owner.name}`, 2000, true, (): void => {
+				this.dialogManager.info(`${player.name} paye ${finalPrice} a ${c.owner.name}`, 2000, true, (): void => {
 					player.money = player.money - finalPrice;
 					if (c.owner !== undefined) {//il sert a rien ce if
 						c.owner.money = c.owner.money + finalPrice
 					}
 				});
-			} else {
+			} else { // Si on est propriétaire de la propriété
 				this.nextPlayer();
 			}
 
 		} else if (c instanceof Jail) {
 			this.game.state = State.JAIL
-			this.openDialog(`${player.name} entre en prison`, 1000);
+			this.dialogManager.info(`${player.name} entre en prison`, 1000);
 
 		} else if (c instanceof Community) {
-			// this.game.state = ?;
-			const message = dialogsCommunity[Math.floor(Math.random() * dialogsCommunity.length)];
-			this.openDialog(message, 1000);
+			const community = communities[Math.floor(Math.random() * communities.length)];
+			this.game.state = community.key;
+			this.game.logCurrentState();
+			this.handleLuck(player, community);
 
 		} else if (c instanceof Luck) {
-			this.game.state = State.LUCK;
-			const luck = dialogsLuck[Math.floor(Math.random() * dialogsLuck.length)];
-			this.LOG.info(`Sous état courant : ${luck.key}`);
+			const luck = lucks[Math.floor(Math.random() * lucks.length)];
+			this.game.state = luck.key;
+			this.game.logCurrentState();
 			this.handleLuck(player, luck);
 
 		} else if (c instanceof Taxe) {
 			this.game.state = State.PAY
-			this.openDialog(`vous etes sur ${c.name}, vous devez ${c.price}`, 3000, true, ()=>{
+			this.dialogManager.info(`vous etes sur ${c.name}, vous devez ${c.price}`, 3000, true, ()=>{
 				player.money -= c.price;
 			});
 		} else {
 			this.nextPlayer();
 		}
-
 
 		this.view.display();
 	}
@@ -220,39 +252,27 @@ export class Controller {
 	handleLuck(player:Player, luck: any): void{
 		switch (luck.key){
 			case 'MOVE':
-				this.openDialog(luck.message, 2000, false, ()=>{
+				this.dialogManager.info(luck.message, 2000, false, ()=>{
 					this.view.movePlayer(player, (player.caseIndex + luck.value + 40) % 40, false);
-					// this.handlePosition();
 				});
 				break;
 			case 'MOVE_TO':
-				this.openDialog(luck.message, 2000, false, ()=>{
-					// player.caseIndex = luck.value;
+				this.dialogManager.info(luck.message, 2000, false, ()=>{
 					this.view.movePlayer(player, luck.value);
-					// this.handlePosition();
 				});
 				break;
 			case 'PAY':
-				this.openDialog(luck.message, 2000, true, ()=>{
+				this.dialogManager.info(luck.message, 2000, true, ()=>{
 					player.money -= luck.value;
 				});
 				break;
 			case 'GAIN':
-				this.openDialog(luck.message, 2000, true, ()=>{
+				this.dialogManager.info(luck.message, 2000, true, ()=>{
 					player.money += luck.value;
 				});
 				break;
 		}
 	}
 
-	openDialog(message: string, duration: number, nextPlayer: boolean = true, then:()=>void = ():void=>{}): void {
-		const modal = document.getElementById("modal-community") as HTMLDialogElement;
-		if (modal) modal.textContent = message;
-		modal.showModal();
-		this.timer = setTimeout(() => {
-			modal.close();
-			then();
-			if (nextPlayer) this.nextPlayer();
-		}, duration);
-	}
+
 }

@@ -1,5 +1,5 @@
 import {Case} from "./case.ts";
-import {Player} from "./player.ts";
+import {Player} from "../player.ts";
 
 export class Property extends Case {
 

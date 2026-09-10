@@ -1,5 +1,5 @@
-import {Colors} from "../util/colors.ts";
-import {Property} from "./property.ts";
+import {Colors} from "../../../util/colors.ts";
+import {Property} from "../property.ts";
 
 export class Compagny extends Property {
 

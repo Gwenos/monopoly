@@ -8,21 +8,70 @@
 </head>
     <body>
         <div class="container">
-            <canvas id="canvas" width="1000" height="600"></canvas>
+            <div class="view">
+                <canvas id="canvas" width="800" height="600"></canvas>
 
-            <div class="menu">
-                <button id="roll">Lancer les dés</button>
+                <div id="players" class="players">  </div>
+
             </div>
 
-            <dialog id="modal-property">
-                <p id="modal-text">Voulez-vous confirmer l'achat ?</p>
-                <button id="buy">Acheter</button>
-                <button id="cancel">Annuler</button>
+            <div class="menu">
+                <button id="roll" class="button green-button">LANCER LES DES</button>
+            </div>
+
+
+            <!--DIALOG-->
+            <dialog id="dialog-property" class="dialog">
+
+                <div class="top-property">
+                    <img src="public/house.png" class="icon" alt="house">
+                    <p id="top-text-property" class="top-text-property">PROPRIETE</p>
+                </div>
+
+                <div class="property-content align-center">
+
+                    <div class="property-card">
+                        <div id="dialog-text">Voulez-vous confirmer l'achat ?</div>
+                        <div id="property-price" class="property-price">PRICE €</div>
+                    </div>
+
+                    <div id="property-rents" class="property-rents">
+                        <div class="title-rent">LOYER</div>
+                        <div class="space-between"><span>Terrain nu</span><span id="rent-0">0 €</span></div>
+                        <div class="space-between"><span>Avec 1 maison</span><span id="rent-1">0 €</span></div>
+                        <div class="space-between"><span>Avec 2 maisons</span><span id="rent-2">0 €</span></div>
+                        <div class="space-between"><span>Avec 3 maisons</span><span id="rent-3">0 €</span></div>
+                        <div class="space-between"><span>Avec 4 maisons</span><span id="rent-4">0 €</span></div>
+                        <div class="space-between"><span>Avec hôtel</span><span id="rent-5">0 €</span></div>
+                    </div>
+
+                    <div id="station-rents" class="property-rents">
+                        <div class="title-rent">LOYER</div>
+                        <div class="space-between"><span>1 gare</span><span>250 €</span></div>
+                        <div class="space-between"><span>2 gare</span><span>500 €</span></div>
+                        <div class="space-between"><span>3 gare</span><span>1000 €</span></div>
+                        <div class="space-between"><span>4 gare</span><span>2000 €</span></div>
+                    </div>
+
+                </div>
+
+                <div class="align-center">
+                    <button id="buy" class="button green-button">ACHETER</button>
+                    <button id="cancel" class="button red-button">ANNULER</button>
+                </div>
+
+                <div class="bottom-property"></div>
             </dialog>
 
-            <dialog id="modal-community">
+            <dialog id="dialog-info" class="dialog">
+                <div class="top-info">
+                    <img src="./public/info.png" class="icon" alt="info">
+                    <p>INFO</p>
+                </div>
+                <p id="text-info" class="text-info">Voulez-vous confirmer l'achat ?</p>
+                <div class="bottom-info">
+                </div>
             </dialog>
-
         </div>
     </body>
 </html>
