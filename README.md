@@ -37,5 +37,4 @@ Lancer le serveur
 
 ## 🔗 Links
 [![linkedin](https://img.shields.io/badge/linkedin-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/gwena%C3%ABl-serpette-b8259b373/)
-[![twitter](https://img.shields.io/badge/instagram-e1306c?style=for-the-badge&logo=Instagram&logoColor=white)](https://twitter.com/)
-
+[![instagram](https://img.shields.io/badge/instagram-e1306c?style=for-the-badge&logo=Instagram&logoColor=white)](https://www.instagram.com/kynder_gweno)
